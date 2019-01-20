@@ -72,6 +72,11 @@ public class BP {
         Core.subtract(lable, outputLayer, t2);
         Core.multiply(t1, t2, t1);
         System.out.println("t1:\n" + t1.dump());
+        Mat t3 = new Mat(weights2.size(), CvType.CV_32F);
+        System.out.println(hiddenLayer + "\n" + t1 + "\n" + t3);
+        Core.gemm(hiddenLayer.t(), t1.t(), 1, new Mat(), 1, t3);
+        Core.add(t3, weights2, weights2);
+        System.out.println("t3:\n" + t3.dump());
     }
     public static void main(String[] args) {
         BP bp = new BP(3, 4, 4, 1);
