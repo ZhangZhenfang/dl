@@ -30,7 +30,7 @@ public class MyPreception {
                 {1, 1, 1},
                 {2, 1, 1},
                 {3, 2, 1}};
-        int[] d = new int[]{1, 1, 1, 1, -1, -1, -1, -1};
+        int[] d = new int[]{1, 1, 1, -1, -1, -1};
         train(0.1, x, d, 500);
         System.out.println(sgn(new double[]{1, 3, 1}));
         System.out.println(sgn(new double[]{3, 1, 1}));
