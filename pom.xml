@@ -21,7 +21,7 @@
             <groupId>org.opencv</groupId>
             <artifactId>opencv</artifactId>
             <version>3.4.1</version>
-            <systemPath>/usr/local/share/OpenCV/java/opencv-341.jar</systemPath>
+            <systemPath>D:/openCV/opencv/build/java/opencv-341.jar</systemPath>
             <scope>system</scope>
         </dependency>
     </dependencies>

@@ -12,7 +12,7 @@ import java.util.Random;
  */
 public class Bp {
     static {
-        String path = "/usr/local/share/OpenCV/java/libopencv_java341.so";
+        String path = "D:\\openCV\\opencv\\build\\java\\x64\\opencv_java341.dll";
         System.load(path);
     }
     private Mat outputLayer;

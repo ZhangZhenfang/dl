@@ -11,10 +11,10 @@ import java.util.Arrays;
  */
 public class MnistReader {
 
-    public static final String TRAIN_IMAGES_FILE = "/home/zhangzhenfang/IdeaProjects/dl/target/classes/data/mnist/train-images-idx3-ubyte";
-    public static final String TRAIN_LABELS_FILE = "/home/zhangzhenfang/IdeaProjects/dl/target/classes/data/mnist/train-labels-idx1-ubyte";
-    public static final String TEST_IMAGES_FILE = "/home/zhangzhenfang/IdeaProjects/dl/target/classes/data/mnist/t10k-images-idx3-ubyte";
-    public static final String TEST_LABELS_FILE = "/home/zhangzhenfang/IdeaProjects/dl/target/classes/data/mnist/t10k-labels-idx1-ubyte";
+    public static final String TRAIN_IMAGES_FILE = "E:\\dl\\target\\classes\\data/mnist/train-images-idx3-ubyte";
+    public static final String TRAIN_LABELS_FILE = "E:\\dl\\target\\classes\\data/mnist/train-labels-idx1-ubyte";
+    public static final String TEST_IMAGES_FILE = "E:\\dl\\target\\classes\\data/mnist/t10k-images-idx3-ubyte";
+    public static final String TEST_LABELS_FILE = "E:\\dl\\target\\classes\\data/mnist/t10k-labels-idx1-ubyte";
 
     private BufferedInputStream imageBin;
     private BufferedInputStream labelBin;
