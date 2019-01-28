@@ -5,6 +5,7 @@ import org.opencv.core.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * @author ZhangZhenfang
@@ -18,19 +19,22 @@ public class Bp {
     private Mat outputLayer;
     private List<Mat> weights;
     private List<Mat> hiddenLayers;
-
+    private Mat delta;
     public static void main(String[] args) {
         double[][] input = new double[][]{{0, 0, 1}, {0, 1, 1}, {1, 1, 1}, {1, 0, 1}};
         double[] labels = new double[]{0,1, 1, 0};
         Bp bp = new Bp(3, 1, new int[]{3}, 1);
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 10000; i++) {
             for (int j = 0; j < input.length; j++) {
                 Mat m = new Mat(1, 3, CvType.CV_32F);
                 m.put(0, 0, input[j]);
                 bp.newForward(m);
+                bp.print();
+                new Scanner(System.in).nextLine();
                 Mat label = new Mat(1, 1, CvType.CV_32F);
                 label.put(0, 0, new double[]{labels[j]});
                 bp.newBackPropagation(m, label, 0.1);
+
             }
         }
         for (int j = 0; j < input.length; j++) {
@@ -56,7 +60,7 @@ public class Bp {
             this.weights.add(m);
             double[] v = new double[m.rows() * m.cols()];
             for (int j = 0; j < v.length; j++) {
-                v[j] = (new Random().nextDouble() - 0.5) * 2;
+                v[j] = 0;//(new Random().nextDouble() - 0.5) * 2;
             }
             m.put(0, 0, v);
             row = hiddeLengthes[i];
@@ -66,7 +70,7 @@ public class Bp {
         Mat m = new Mat(row, outLength, CvType.CV_32F);
         double[] v = new double[m.rows() * m.cols()];
         for (int j = 0; j < v.length; j++) {
-            v[j] = (new Random().nextDouble() - 0.5) * 2;
+            v[j] = 0;//(new Random().nextDouble() - 0.5) * 2;
         }
         m.put(0, 0, v);
         weights.add(m);
@@ -142,6 +146,7 @@ public class Bp {
         Core.gemm(input.t(), deltaHidden.t(), 1, new Mat(), 1, t7);
         Core.multiply(t7, new Scalar(rate), t7);
         Core.add(weights.get(0), t7, weights.get(0));
+        this.delta = deltaHidden;
     }
 
     public void print() {
@@ -184,5 +189,13 @@ public class Bp {
 
     public void setOutputLayer(Mat outputLayer) {
         this.outputLayer = outputLayer;
+    }
+
+    public Mat getDelta() {
+        return delta;
+    }
+
+    public void setDelta(Mat delta) {
+        this.delta = delta;
     }
 }

@@ -23,32 +23,49 @@ public class Cnn {
     private Mat weight;
 
     public static void main(String[] args) throws Exception {
-//        MnistReader reader = new MnistReader(MnistReader.TRAIN_IMAGES_FILE, MnistReader.TRAIN_LABELS_FILE);
-//        double[] nextImage = reader.getNextImage(false);
-//        Mat m = new Mat(28, 28, CvType.CV_32F);
-//        m.put(0, 0, nextImage);
-//        m.reshape(28);
+        MnistReader reader = new MnistReader(MnistReader.TRAIN_IMAGES_FILE, MnistReader.TRAIN_LABELS_FILE);
+        double[] nextImage = reader.getNextImage(false);
+        Mat m = new Mat(28, 28, CvType.CV_32F);
+        m.put(0, 0, nextImage);
+        m.reshape(28);
+        List<Mat> input = new ArrayList();
+        input.add(m);
 
-        List input = new ArrayList();
-        Mat m = new Mat(5, 5, CvType.CV_32F);
-        m.put(0, 0, new double[]{0, 1, 1, 0, 2, 2, 2, 2, 2, 1, 1, 0, 0, 2, 0, 0, 1, 1, 0, 0, 1, 2, 0, 0, 2});
-        System.out.println(m.dump());
-        input.add(m);
-        m = new Mat(5, 5, CvType.CV_32F);
-        m.put(0, 0, new double[]{1, 0, 2, 2, 0, 0, 0, 0, 2, 0, 1, 2, 1, 2, 1, 1, 0, 0, 0, 0, 1, 2, 1, 1, 1});
-        System.out.println(m.dump());
-        input.add(m);
-        m = new Mat(5, 5, CvType.CV_32F);
-        m.put(0, 0, new double[]{2, 1, 2, 0, 0, 1, 0, 0, 1, 0, 0, 2, 1, 0, 1, 0, 1, 2, 2, 2, 2, 1, 0, 0, 1});
-        System.out.println(m.dump());
-        input.add(m);
-        ConvLayer convLayer = new ConvLayer(input, 3, 1, 1, 2);
-        convLayer.computeOut();
-        convLayer.print();
-//        Core.chan
-//        Cnn cnn = new Cnn();
-//        cnn.print();
-//        cnn.forward(m);
+        ConvLayer convLayer1 = new ConvLayer(input, 3, 1, 1, 1);
+        convLayer1.computeOut();
+        convLayer1.print();
+
+        PoolingLayer poolingLayer1 = new PoolingLayer(convLayer1.getOut(), 2, 0, 2, 2);
+        poolingLayer1.computeOut();
+        poolingLayer1.print();
+        List<Mat> out = poolingLayer1.getOut();
+
+        ConvLayer convLayer2 = new ConvLayer(out, 3, 1, 1, 3);
+        convLayer2.computeOut();
+        convLayer2.print();
+
+        PoolingLayer poolingLayer2 = new PoolingLayer(convLayer2.getOut(), 2, 0, 2, 1);
+        poolingLayer2.computeOut();
+        poolingLayer2.print();
+
+        List<Mat> out1 = poolingLayer2.getOut();
+        Mat bpInput = new Mat(out1.size(), 49, CvType.CV_32F);
+        List<Mat> mats = new ArrayList<Mat>();
+
+        for (int i = 0; i < out1.size(); i++) {
+            mats.add(out1.get(i).reshape(1, 1));
+        }
+        Core.vconcat(mats, bpInput);
+        bpInput = bpInput.reshape(1, 1);
+        Bp bp = new Bp(bpInput.cols(), 2, new int[]{20, 15}, 10);
+        bp.newForward(bpInput);
+        System.out.println(bp.getOutputLayer().dump());
+        double[] nextLabel = reader.getNextLabel();
+        Mat label = new Mat(10, 1, CvType.CV_32F);
+        label.put(0, 0, nextLabel);
+        bp.newBackPropagation(bpInput, label, 0.1);
+        Mat delta = bp.getDelta();
+        System.out.println(delta.dump());
     }
 
     public Cnn() {
@@ -92,110 +109,4 @@ public class Cnn {
         }
         dst.put(0, 0, data);
     }
-}
-
-class ConvLayer {
-
-    /**
-     * 过滤器大小
-     */
-    private int filterSize;
-    /**
-     * padding size
-     */
-    private int padding;
-    /**
-     * 卷积步长
-     */
-    private int stride;
-    /**
-     * 过滤器个数
-     */
-    private int numberOfFilters;
-
-    private List<Mat> input;
-    private List<List<Mat>> filters;
-    private List<Mat> out;
-
-    double[][][] testdata = new double[][][]{{{-1, 1, 0, 0, 1, 0, 0, 1, 1}, {-1, -1, 0, 0, 0, 0, 0, -1, 0}, {0, 0, -1, 0, 1, 0, 1, -1 , -1}}, {{1, 1, -1, -1, -1, 1, 0, -1, 1}, {0, 1, 0, -1, 0, -1, -1, 1, 0}, {-1, 0, 0, -1, 0, 1, -1, 0, 0}}};
-    public ConvLayer() {
-
-    }
-    public ConvLayer(List<Mat> input, int filterSize, int padding, int stride, int numberOfFilters) {
-        this.input = input;
-        this.filterSize = filterSize;
-        this.padding = padding;
-        this.stride = stride;
-        this.numberOfFilters = numberOfFilters;
-        init();
-    }
-
-    private void init() {
-        filters = new ArrayList<List<Mat>>();
-        out = new ArrayList<Mat>();
-        int convSize = (input.get(0).rows() + 2 * padding - filterSize) / stride + 1;
-        Random random = new Random();
-        int length = filterSize * filterSize;
-        double[] data = new double[length];
-
-        for (int i = 0; i < numberOfFilters; i++) {
-            List<Mat> mats = new ArrayList<Mat>();
-            for (int j = 0; j < input.size(); j++) {
-                Mat m = new Mat(filterSize, filterSize, input.get(0).type());
-                for (int k = 0; k < length; k++) {
-                    data[k] = (random.nextDouble() - 0.5) * 2;
-                }
-//                m.put(0, 0, testdata[i][j]);
-                m.put(0, 0, data);
-                mats.add(m);
-            }
-            filters.add(mats);
-            out.add(Mat.zeros(convSize, convSize, CvType.CV_32F));
-        }
-    }
-
-    public void computeOut() {
-        for (int i = 0; i < filters.size(); i++) {
-            Mat dst = new Mat(out.get(i).size(), out.get(i).type());
-            for (int j = 0; j < filters.get(i).size(); j++) {
-                Imgproc.filter2D(input.get(j), dst, input.get(j).depth(), filters.get(i).get(j));
-                System.out.println(i + " " + j);
-                System.out.println(dst.dump());
-                Core.add(dst, out.get(i), out.get(i));
-            }
-        }
-    }
-
-    public void backPropagation() {
-        System.out.println("this is backPropagation");
-    }
-
-    public void print() {
-        System.out.println("/***********************************************");
-        for (int i = 0; i < filters.size(); i++) {
-            System.out.println("filter " + i + ":");
-            for (int j = 0; j < filters.get(i).size(); j++) {
-                System.out.println(filters.get(i).get(j).dump());
-            }
-            System.out.println("out " + i + ":");
-            System.out.println(out.get(i).dump());
-        }
-        System.out.println("***********************************************/");
-    }
-}
-
-class PoolingLayer {
-    /**
-     * 过滤器大小
-     */
-    private int filterSize;
-    /**
-     * 步长
-     */
-    private int stride;
-    /**
-     *
-     */
-    private int numberOfFilters;
-
 }

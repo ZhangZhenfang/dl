@@ -38,6 +38,7 @@ public class MnistTest {
             times++;
             System.out.print("epoch " + times + " : ");
             System.out.println("cost " + (System.currentTimeMillis() - startTime) / 1000 + "s");
+            System.out.println(bp.getDelta().dump());
             test(bp);
         }
     }
