@@ -1,6 +1,9 @@
-package peer.afang.dl.neuralnetwork;
+package peer.afang.dl.neuralnetwork.cnn;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +32,8 @@ public class PoolingLayer {
 
     private List<Mat> input;
     private List<Mat> out;
+    private List<Mat> position;
+    private List<Mat> delta;
 
     double[][][] testdata = new double[][][]{{{-1, 1, 0, 0, 1, 0, 0, 1, 1}, {-1, -1, 0, 0, 0, 0, 0, -1, 0}, {0, 0, -1, 0, 1, 0, 1, -1 , -1}}, {{1, 1, -1, -1, -1, 1, 0, -1, 1}, {0, 1, 0, -1, 0, -1, -1, 1, 0}, {-1, 0, 0, -1, 0, 1, -1, 0, 0}}};
     public PoolingLayer() {
@@ -45,22 +50,67 @@ public class PoolingLayer {
 
     private void init() {
         out = new ArrayList<Mat>();
+        position = new ArrayList<Mat>();
+        delta = new ArrayList<Mat>();
         int poolSize = (input.get(0).rows() + 2 * padding - filterSize) / stride + 1;
         for (int i = 0; i < input.size(); i++) {
             out.add(new Mat(poolSize, poolSize, input.get(0).type()));
+            position.add(new Mat(poolSize, poolSize, CvType.CV_16U));
         }
     }
 
     public void computeOut() {
         try {
             for (int i = 0; i < input.size(); i++) {
-                Cnn.maxPooling(input.get(i), filterSize, filterSize, out.get(i));
+                Cnn.maxPooling(input.get(i), filterSize, filterSize, out.get(i), position.get(i));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    public void computeDeltaFromFC(List<Mat> lastDelta) {
+        for (int i = 0; i < lastDelta.size(); i++) {
+            Mat d = lastDelta.get(i);
+            Mat pos = position.get(i);
+            delta.add(upsample(d, pos));
+        }
+    }
+    public void computeDeltaFromConvLayer(List<Mat> lastDelta, List<Mat> lastFilter) {
+        for (int i = 0; i < lastDelta.size(); i++) {
+            Mat d = lastDelta.get(i);
+            Mat f = lastFilter.get(i);
+//            Mat paddingDelta = ConvLayer.paddingZeor(d, f.rows() - 1, f.cols() - 1, f.rows() - 1,
+//                    f.cols() - 1);
+            Mat dst = new Mat(d.size(), d.type());
+            Imgproc.filter2D(d, dst, d.depth(), f);
+            System.out.println(dst);
+            delta.add(dst);
+        }
+    }
+
+    public static Mat upsample(Mat mat, Mat pos) {
+        List<Mat> list1 = new ArrayList<Mat>();
+        for (int i = 0; i < pos.rows(); i++) {
+            List<Mat> list2 = new ArrayList<Mat>();
+            for (int j = 0; j < pos.cols(); j++) {
+                double[] data = new double[4];
+                data[(int) pos.get(i, j)[0]] = mat.get(i, j)[0];
+                Mat m = new Mat(1, 4, CvType.CV_32F);
+                m.put(0, 0, data);
+                m = m.reshape(1, 2);
+                list2.add(m);
+                System.out.println(m.dump());
+            }
+            Mat dst = new Mat(2, pos.cols() * 2, CvType.CV_32F);
+            Core.hconcat(list2, dst);
+            System.out.println(dst.dump());
+            list1.add(dst);
+        }
+        Mat result = new Mat(pos.rows() * 2, pos.cols() * 2, CvType.CV_32F);
+        Core.vconcat(list1, result);
+        return result;
+    }
     public void backPropagation() {
         System.out.println("this is backPropagation");
     }
@@ -74,6 +124,22 @@ public class PoolingLayer {
             System.out.println(out.get(i).dump());
         }
         System.out.println("***********************************************/");
+    }
+
+    public List<Mat> getPosition() {
+        return position;
+    }
+
+    public void setPosition(List<Mat> position) {
+        this.position = position;
+    }
+
+    public List<Mat> getDelta() {
+        return delta;
+    }
+
+    public void setDelta(List<Mat> delta) {
+        this.delta = delta;
     }
 
     public int getFilterSize() {

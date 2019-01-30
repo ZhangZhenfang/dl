@@ -1,10 +1,9 @@
-package peer.afang.dl.neuralnetwork;
+package peer.afang.dl.neuralnetwork.bp;
 
 import org.opencv.core.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Scanner;
 
 /**

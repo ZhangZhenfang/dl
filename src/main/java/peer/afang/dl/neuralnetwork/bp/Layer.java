@@ -1,4 +1,4 @@
-package peer.afang.dl.neuralnetwork;
+package peer.afang.dl.neuralnetwork.bp;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;

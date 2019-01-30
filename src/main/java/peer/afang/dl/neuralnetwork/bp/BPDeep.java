@@ -1,4 +1,4 @@
-package peer.afang.dl.neuralnetwork;
+package peer.afang.dl.neuralnetwork.bp;
 import java.util.Random;
 
 /**

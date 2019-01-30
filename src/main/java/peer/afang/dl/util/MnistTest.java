@@ -3,12 +3,15 @@ package peer.afang.dl.util;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import peer.afang.dl.neuralnetwork.Bp;
+import peer.afang.dl.neuralnetwork.bp.Bp;
+import peer.afang.dl.neuralnetwork.bp.NewBp;
+import peer.afang.dl.neuralnetwork.bp.OutLayer;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Scanner;
 
 /**
  * @author ZhangZhenfang
@@ -18,6 +21,7 @@ public class MnistTest {
 
     public static void main(String[] args) {
         MnistReader trainMnistReader = new MnistReader(MnistReader.TRAIN_IMAGES_FILE, MnistReader.TRAIN_LABELS_FILE);
+        NewBp newBp = new NewBp(new Mat(1, 784, CvType.CV_32F), 2, new int[]{300, 300}, 10);
         Bp bp = new Bp(784, 2, new int[]{300, 300}, 10);
         int times = 0;
         while(times < 20) {
@@ -29,17 +33,21 @@ public class MnistTest {
                 }
                 Mat input = new Mat(1, 784, CvType.CV_32F);
                 input.put(0, 0, nextImage);
-                bp.newForward(input);
-
+//                bp.newForward(input);
+                newBp.forward(input);
                 Mat label = getNextLabel(trainMnistReader);
-                bp.newBackPropagation(input, label, 0.2);
+//                bp.newBackPropagation(input, label, 0.2);
+                newBp.back(input, label, 0.1);
+                System.out.println(newBp.getHidLayers().get(0).getDelta().dump());
+                new Scanner(System.in).nextLine();
             }
             trainMnistReader.open(MnistReader.TRAIN_IMAGES_FILE, MnistReader.TRAIN_LABELS_FILE);
             times++;
             System.out.print("epoch " + times + " : ");
             System.out.println("cost " + (System.currentTimeMillis() - startTime) / 1000 + "s");
-            System.out.println(bp.getDelta().dump());
-            test(bp);
+//            System.out.println(bp.getDelta().dump());
+//            test(bp);
+            test(newBp);
         }
     }
 
@@ -74,9 +82,40 @@ public class MnistTest {
         System.out.print(numberOfTest + " " + right + " " + error + "  ");
         System.out.println("correct ratio : " + (double) right / numberOfTest);
     }
+    /**
+     * 测试
+     * @param bp
+     */
+    public static void test(NewBp bp) {
+        MnistReader testMnistReader = new MnistReader(MnistReader.TEST_IMAGES_FILE, MnistReader.TEST_LABELS_FILE);
+        int numberOfTest = 0;
+        int right = 0;
+        int error = 0;
+        while(true) {
+            double[] nextImage = testMnistReader.getNextImage(true);
+            if (nextImage == null) {
+                break;
+            }
+            Mat input = new Mat(1, 784, CvType.CV_32F);
+            input.put(0, 0, nextImage);
+            bp.forward(input);
 
+            Mat label = getNextLabel(testMnistReader);
+            OutLayer outLayer = bp.getOutLayer();
+            int[] predict = indexOfMax(outLayer.getOutput());
+            int[] real = indexOfMax(label);
+            numberOfTest++;
+            if (predict[0] == real[0] && predict[1] == real[1]) {
+                right++;
+            } else {
+                error++;
+            }
+        }
+        System.out.print(numberOfTest + " " + right + " " + error + "  ");
+        System.out.println("correct ratio : " + (double) right / numberOfTest);
+    }
     public static Mat getNextLabel(MnistReader reader) {
-        Mat label = new Mat(10, 1, CvType.CV_32F);
+        Mat label = new Mat(1, 10, CvType.CV_32F);
         double[] nextLabel = reader.getNextLabel();
         label.put(0, 0, nextLabel);
         return label;
