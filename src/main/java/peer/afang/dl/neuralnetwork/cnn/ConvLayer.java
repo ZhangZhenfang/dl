@@ -4,10 +4,12 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import peer.afang.dl.util.MatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * @author ZhangZhenfang
@@ -79,14 +81,16 @@ public class ConvLayer {
         for (int i = 0; i < filters.size(); i++) {
             Mat dst = new Mat(out.get(i).size(), out.get(i).type());
             for (int j = 0; j < filters.get(i).size(); j++) {
-                Imgproc.filter2D(input.get(j), dst, input.get(j).depth(), filters.get(i).get(j));
-                Core.add(dst, out.get(i), out.get(i));
+                Mat conv = MatUtils.conv(input.get(j), filters.get(i).get(j), 1, 0, 0);
+                Core.add(conv, out.get(i), out.get(i));
             }
             Cnn.relu(out.get(i));
         }
     }
 
-    public void computeDeltaFromFC(List<Mat> lastDelta, List<Mat> position) {
+    public void computeDeltaFromPoolingLayer(List<Mat> lastDelta, List<Mat> position) {
+        delta.clear();
+//        new Scanner(System.in).nextLine();
         for (int i = 0; i < lastDelta.size(); i++) {
             Mat d = lastDelta.get(i);
             Mat pos = position.get(i);
@@ -94,18 +98,6 @@ public class ConvLayer {
         }
     }
 
-    public void computeDeltaFromPoolingLayer(List<Mat> lastDelta, List<Mat> lastFilter) {
-        for (int i = 0; i < lastDelta.size(); i++) {
-            Mat d = lastDelta.get(i);
-            Mat f = lastFilter.get(i);
-//            Mat paddingDelta = paddingZeor(d, f.rows() - 1, f.cols() - 1, f.rows() - 1,
-//                    f.cols() - 1);
-            Mat dst = new Mat(d.size(), d.type());
-            Imgproc.filter2D(d, dst, d.depth(), f);
-            System.out.println(dst);
-            delta.add(dst);
-        }
-    }
     public void updateFilter() {
         for (int i = 0; i < filters.size(); i++) {
             List<Mat> s = filters.get(i);
@@ -113,41 +105,10 @@ public class ConvLayer {
             for (int j = 0; j < s.size(); j++) {
                 Mat f = s.get(j);
                 Mat m = input.get(j);
-                Mat w = new Mat(f.size(), f.type());
-                Imgproc.filter2D(m, w, m.depth(), d);
-                Core.add(w, f, f);
+                Mat conv = MatUtils.conv(m, d, 1, 0, 0);
+                Core.add(conv, f, f);
             }
         }
-    }
-
-    public static Mat paddingZeor(Mat mat, int top, int right, int bottom, int left) {
-        int srcRows = mat.rows();
-        int srcCols = mat.cols();
-        Mat result = new Mat(srcRows + top + bottom, srcCols + left + right, mat.type());
-        List<Mat> data = new ArrayList<Mat>();
-        for (int i = 0; i < top; i++) {
-            data.add(Mat.zeros(1, result.cols(), result.type()));
-        }
-        Mat leftMat;
-        Mat rightMat;
-        Mat row;
-        List<Mat> tmpList = new ArrayList<Mat>();
-        for (int i = 0; i < srcRows; i++) {
-            tmpList.clear();
-            leftMat = Mat.zeros(1, left, result.type());
-            rightMat = Mat.zeros(1, right, result.type());
-            row = new Mat(1, left + srcCols + right, result.type());
-            tmpList.add(leftMat);
-            tmpList.add(mat.rowRange(i, i + 1));
-            tmpList.add(rightMat);
-            Core.hconcat(tmpList, row);
-            data.add(row);
-        }
-        for (int i = 0; i < bottom; i++) {
-            data.add(Mat.zeros(1, result.cols(), result.type()));
-        }
-        Core.vconcat(data, result);
-        return result;
     }
 
     public void print() {

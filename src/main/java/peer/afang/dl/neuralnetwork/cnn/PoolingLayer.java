@@ -4,6 +4,7 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import peer.afang.dl.util.MatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,23 +70,21 @@ public class PoolingLayer {
         }
     }
 
-    public void computeDeltaFromFC(List<Mat> lastDelta) {
-        for (int i = 0; i < lastDelta.size(); i++) {
-            Mat d = lastDelta.get(i);
-            Mat pos = position.get(i);
-            delta.add(upsample(d, pos));
-        }
-    }
     public void computeDeltaFromConvLayer(List<Mat> lastDelta, List<Mat> lastFilter) {
+        delta.clear();
         for (int i = 0; i < lastDelta.size(); i++) {
             Mat d = lastDelta.get(i);
             Mat f = lastFilter.get(i);
+            Mat tmp = new Mat(f.size(), f.type());
+            Core.flip(f, tmp, 0);
+            Core.flip(tmp, tmp, 1);
 //            Mat paddingDelta = ConvLayer.paddingZeor(d, f.rows() - 1, f.cols() - 1, f.rows() - 1,
 //                    f.cols() - 1);
             Mat dst = new Mat(d.size(), d.type());
-            Imgproc.filter2D(d, dst, d.depth(), f);
-            System.out.println(dst);
-            delta.add(dst);
+            int paddingSize = lastFilter.get(0).rows() - 1;
+            Mat mat = MatUtils.paddingZeor(d, paddingSize, paddingSize, paddingSize, paddingSize);
+            Mat conv = MatUtils.conv(mat, tmp, 1, 0, 0);
+            delta.add(conv);
         }
     }
 
@@ -100,11 +99,9 @@ public class PoolingLayer {
                 m.put(0, 0, data);
                 m = m.reshape(1, 2);
                 list2.add(m);
-                System.out.println(m.dump());
             }
             Mat dst = new Mat(2, pos.cols() * 2, CvType.CV_32F);
             Core.hconcat(list2, dst);
-            System.out.println(dst.dump());
             list1.add(dst);
         }
         Mat result = new Mat(pos.rows() * 2, pos.cols() * 2, CvType.CV_32F);

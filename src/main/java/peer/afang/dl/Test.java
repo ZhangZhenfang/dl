@@ -35,12 +35,17 @@ public class Test {
 
         m = new Mat(4, 4, CvType.CV_32F);
         m.put(0, 0, new double[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
-        System.out.println(m.dump());
-        Mat dst = new Mat(2, 2, CvType.CV_32F);
-        Mat ker = Mat.ones(3, 3, CvType.CV_32F);
-        Imgproc.filter2D(m, dst, m.depth(), ker, new Point(-1, -1), 0, 3);
-
+        Mat dst = new Mat(m.size(), m.type());
+        Core.flip(m, dst, 0);
+        Core.flip(dst, dst, 1);
         System.out.println(dst.dump());
+
+//        System.out.println(m.dump());
+//        Mat dst = new Mat(2, 2, CvType.CV_32F);
+//        Mat ker = Mat.ones(3, 3, CvType.CV_32F);
+//        Imgproc.filter2D(m, dst, m.depth(), ker, new Point(-1, -1), 0, 3);
+
+//        System.out.println(dst.dump());
 //        Mat dst = new Mat(2, 2, CvType.CV_32F);
 //        Mat posDst = new Mat(2, 2, CvType.CV_16U);
 //        Cnn.maxPooling(m, 2, 2, dst, posDst);
