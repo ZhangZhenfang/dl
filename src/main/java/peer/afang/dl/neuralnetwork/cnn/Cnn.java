@@ -78,7 +78,8 @@ public class Cnn {
             }
             Mat input = new Mat(28, 28, CvType.CV_32F);
             input.put(0, 0, nextImage);
-               list.add(input);
+            List<Mat> list = new ArrayList<Mat>();
+            list.add(input);
             bp.forward(list);
 
             Mat label = MnistTest.getNextLabel(testMnistReader);
