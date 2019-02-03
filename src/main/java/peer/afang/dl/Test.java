@@ -9,6 +9,7 @@ import org.opencv.imgproc.Imgproc;
 import peer.afang.dl.neuralnetwork.cnn.Cnn;
 import peer.afang.dl.neuralnetwork.cnn.ConvLayer;
 import peer.afang.dl.neuralnetwork.cnn.PoolingLayer;
+import peer.afang.dl.util.MatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +36,13 @@ public class Test {
 
         m = new Mat(4, 4, CvType.CV_32F);
         m.put(0, 0, new double[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
-        Mat dst = new Mat(m.size(), m.type());
-        Core.flip(m, dst, 0);
-        Core.flip(dst, dst, 1);
+        Mat ker = new Mat(2, 2, CvType.CV_32F);
+        ker.put(0, 0, new double[]{1, 2, 3, 4});
+        Mat dst = new Mat();
+        System.out.println(m.dump());
+        Core.rotate(ker, dst, 1);
         System.out.println(dst.dump());
+        System.out.println(MatUtils.conv(m, dst, 1, 0, 0).dump());
 
 //        System.out.println(m.dump());
 //        Mat dst = new Mat(2, 2, CvType.CV_32F);

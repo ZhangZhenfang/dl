@@ -3,13 +3,11 @@ package peer.afang.dl.neuralnetwork.cnn;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 import peer.afang.dl.util.MatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Scanner;
 
 /**
  * @author ZhangZhenfang
@@ -78,6 +76,7 @@ public class ConvLayer {
     }
 
     public void computeOut() {
+
         for (int i = 0; i < filters.size(); i++) {
             Mat dst = new Mat(out.get(i).size(), out.get(i).type());
             for (int j = 0; j < filters.get(i).size(); j++) {

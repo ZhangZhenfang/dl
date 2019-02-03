@@ -38,8 +38,14 @@ public class MatUtils {
         for (int i = 0; i <= src.rows() - filterSize; i++) {
             for (int j = 0; j <= src.cols() - filterSize; j++) {
                 Mat submat = src.submat(i, i + filterSize, j, j + filterSize);
-                Core.multiply(submat, kernel, submat);
-                data[index++] = sumMat(submat);
+                Mat res = new Mat();
+                Core.multiply(submat, kernel, res);
+//                System.out.println("*******************************");
+//                System.out.println(submat.dump());
+//                System.out.println(kernel.dump());
+//                System.out.println(res.dump());
+//                System.out.println("*******************************");
+                data[index++] = sumMat(res);
             }
         }
         result.put(0, 0, data);

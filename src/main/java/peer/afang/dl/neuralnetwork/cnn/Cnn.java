@@ -3,6 +3,9 @@ package peer.afang.dl.neuralnetwork.cnn;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import peer.afang.dl.neuralnetwork.bp.Bp;
 import peer.afang.dl.neuralnetwork.bp.NewBp;
 import peer.afang.dl.neuralnetwork.bp.OutLayer;
@@ -35,17 +38,13 @@ public class Cnn {
 
     public static void main(String[] args) throws Exception {
         MnistReader reader = new MnistReader(MnistReader.TRAIN_IMAGES_FILE, MnistReader.TRAIN_LABELS_FILE);
-        double[] nextImage = reader.getNextImage(true);
+        double[] nextImage;// = reader.getNextImage(true);
         Mat m = new Mat(28, 28, CvType.CV_32F);
-        m.put(0, 0, nextImage);
-//        m.reshape(28);
         List<Mat> input = new ArrayList();
         input.add(m);
         Cnn cnn = new Cnn(input);
-        cnn.forward(input);
-        Mat nextLabel = MnistTest.getNextLabel(reader);
-        cnn.back(nextLabel);
-        reader.open(MnistReader.TRAIN_IMAGES_FILE, MnistReader.TRAIN_LABELS_FILE);
+        Mat nextLabel;// = MnistTest.getNextLabel(reader);
+        int i = 0;
         while(true) {
             input.clear();
             nextImage = reader.getNextImage(true);
@@ -54,15 +53,21 @@ public class Cnn {
             }
             Mat in = new Mat(28, 28, CvType.CV_32F);
             in.put(0, 0, nextImage);
+            Mat toWrite = new Mat(28, 28, CvType.CV_32F);
+//            Core.multiply(in, new Scalar(255), toWrite);
+//            Imgcodecs.imwrite("E:\\dl\\target\\classes\\data/mnist/image.jpg", toWrite);
             input.add(in);
             cnn.forward(input);
             nextLabel = MnistTest.getNextLabel(reader);
+//            System.out.println(nextLabel.dump());
             cnn.back(nextLabel);
-            System.out.println(cnn.convLayer1.getDelta().get(0).dump());
-            new Scanner(System.in).nextLine();
+            if (++i % 10000 == 0) {
+                test(cnn);
+            }
 //            new Scanner(System.in).nextLine();
+//            System.out.println(cnn.convLayer1.getDelta().get(0).dump());
         }
-        test(cnn);
+//        test(cnn);
 
     }
 
@@ -148,8 +153,8 @@ public class Cnn {
         double[] positionData = new double[dst.cols() * dst.rows()];
         int i = 0;
         if (src.rows() % rows != 0 || src.cols() % cols != 0) {
-            System.out.println(src);
-            System.out.println(rows + " " + cols);
+//            System.out.println(src);
+//            System.out.println(rows + " " + cols);
             throw new Exception("size don't fit");
         }
         if (src.rows() / rows != dst.rows() || src.cols() / cols != dst.cols()) {
