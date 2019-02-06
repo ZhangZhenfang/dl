@@ -30,10 +30,11 @@ public class MatUtils {
     public static Mat conv(Mat src, Mat kernel, int stride, int padding, double d) {
         int filterSize = kernel.rows();
         int resultSize = (src.rows() + 2 * padding - filterSize) / stride + 1;
-//        System.out.println(resultSize);
+        System.out.println(resultSize);
         double[] data = new double[resultSize * resultSize];
         int index = 0;
 //        System.out.println(src.rows() + " " + stride + " " + padding);
+
         Mat result = new Mat(resultSize, resultSize, CvType.CV_32F);
         for (int i = 0; i <= src.rows() - filterSize; i++) {
             for (int j = 0; j <= src.cols() - filterSize; j++) {
@@ -50,6 +51,21 @@ public class MatUtils {
         }
         result.put(0, 0, data);
         return result;
+    }
+    public static void conv(Mat src, Mat kernel, Mat dst, int stride, int padding, double d) {
+        int filterSize = kernel.rows();
+        int resultSize = (src.rows() + 2 * padding - filterSize) / stride + 1;
+        double[] data = new double[resultSize * resultSize];
+        int index = 0;
+        for (int i = 0; i <= src.rows() - filterSize; i++) {
+            for (int j = 0; j <= src.cols() - filterSize; j++) {
+                Mat submat = src.submat(i, i + filterSize, j, j + filterSize);
+                Mat res = new Mat();
+                Core.multiply(submat, kernel, res);
+                data[index++] = sumMat(res);
+            }
+        }
+        dst.put(0, 0, data);
     }
 
     public static double sumMat(Mat mat) {

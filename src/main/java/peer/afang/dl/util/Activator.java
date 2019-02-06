@@ -9,6 +9,8 @@ import org.opencv.core.Mat;
 public interface Activator {
     Mat activate(Mat mat);
     Mat derivative(Mat mat);
+    Mat activate(Mat src, Mat dst);
+    Mat derivative(Mat src, Mat dst);
     double activate(double x);
     double derivative(double x);
 }

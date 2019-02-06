@@ -7,6 +7,23 @@ import org.opencv.core.Mat;
  * @date 2019/2/3 9:32
  */
 public class Tanh implements Activator {
+    public Mat activate(Mat src, Mat dst) {
+        for (int i = 0; i < src.rows(); i++) {
+            for (int j = 0; j < src.cols(); j++) {
+                dst.put(i, j, activate(src.get(i, j)[0]));
+            }
+        }
+        return null;
+    }
+
+    public Mat derivative(Mat src, Mat dst) {
+        for (int i = 0; i < src.rows(); i++) {
+            for (int j = 0; j < src.cols(); j++) {
+                dst.put(i, j, derivative(src.get(i, j)[0]));
+            }
+        }
+        return null;
+    }
     public Mat activate(Mat mat) {
         Mat result = new Mat(mat.size(), mat.type());
         for (int i = 0; i < mat.rows(); i++) {

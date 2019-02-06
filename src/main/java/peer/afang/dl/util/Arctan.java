@@ -25,6 +25,25 @@ public class Arctan implements Activator {
         }
         return result;
     }
+
+    public Mat activate(Mat src, Mat dst) {
+        for (int i = 0; i < src.rows(); i++) {
+            for (int j = 0; j < src.cols(); j++) {
+                dst.put(i, j, activate(src.get(i, j)[0]));
+            }
+        }
+        return null;
+    }
+
+    public Mat derivative(Mat src, Mat dst) {
+        for (int i = 0; i < src.rows(); i++) {
+            for (int j = 0; j < src.cols(); j++) {
+                dst.put(i, j, derivative(src.get(i, j)[0]));
+            }
+        }
+        return null;
+    }
+
     public double activate(double x) {
         return Math.atan(x);
     }
