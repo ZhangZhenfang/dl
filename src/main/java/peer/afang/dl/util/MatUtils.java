@@ -18,34 +18,31 @@ public class MatUtils {
     }
 
     public static void main(String[] args) {
-        Mat src = new Mat(4, 4, CvType.CV_32F);
+        Mat src = new Mat(1, 16, CvType.CV_32F);
         src.put(0, 0, new double[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
-        Mat kernel = Mat.ones(2, 2, CvType.CV_32F);
-        Mat conv = conv(src, kernel, 1, 0, 0);
+        Mat kernel = Mat.ones(1, 4, CvType.CV_32F);
+        Mat dst = new Mat(1, 13, CvType.CV_32F);
+        conv(src, kernel, dst, 1, 0, 0);
         System.out.println(src.dump());
-        System.out.println(conv.dump());
+        System.out.println(dst.dump());
 
     }
 
     public static Mat conv(Mat src, Mat kernel, int stride, int padding, double d) {
-        int filterSize = kernel.rows();
-        int resultSize = (src.rows() + 2 * padding - filterSize) / stride + 1;
-        System.out.println(resultSize);
-        double[] data = new double[resultSize * resultSize];
-        int index = 0;
-//        System.out.println(src.rows() + " " + stride + " " + padding);
+        int filterRows = kernel.rows();
+        int filterCols = kernel.cols();
 
-        Mat result = new Mat(resultSize, resultSize, CvType.CV_32F);
-        for (int i = 0; i <= src.rows() - filterSize; i++) {
-            for (int j = 0; j <= src.cols() - filterSize; j++) {
-                Mat submat = src.submat(i, i + filterSize, j, j + filterSize);
+        int resultRows = (src.rows() + 2 * padding - filterRows) / stride + 1;
+        int resultCols = (src.cols() + 2 * padding - filterCols) / stride + 1;
+
+        Mat result = new Mat(resultRows, resultCols, CvType.CV_32F);
+        double[] data = new double[resultRows * resultCols];
+        int index = 0;
+        for (int i = 0; i <= src.rows() - filterRows; i++) {
+            for (int j = 0; j <= src.cols() - filterCols; j++) {
+                Mat submat = src.submat(i, i + filterRows, j, j + filterCols);
                 Mat res = new Mat();
                 Core.multiply(submat, kernel, res);
-//                System.out.println("*******************************");
-//                System.out.println(submat.dump());
-//                System.out.println(kernel.dump());
-//                System.out.println(res.dump());
-//                System.out.println("*******************************");
                 data[index++] = sumMat(res);
             }
         }
@@ -53,13 +50,17 @@ public class MatUtils {
         return result;
     }
     public static void conv(Mat src, Mat kernel, Mat dst, int stride, int padding, double d) {
-        int filterSize = kernel.rows();
-        int resultSize = (src.rows() + 2 * padding - filterSize) / stride + 1;
-        double[] data = new double[resultSize * resultSize];
+        int filterRows = kernel.rows();
+        int filterCols = kernel.cols();
+
+        int resultRows = (src.rows() + 2 * padding - filterRows) / stride + 1;
+        int resultCols = (src.cols() + 2 * padding - filterCols) / stride + 1;
+
+        double[] data = new double[resultRows * resultCols];
         int index = 0;
-        for (int i = 0; i <= src.rows() - filterSize; i++) {
-            for (int j = 0; j <= src.cols() - filterSize; j++) {
-                Mat submat = src.submat(i, i + filterSize, j, j + filterSize);
+        for (int i = 0; i <= src.rows() - filterRows; i++) {
+            for (int j = 0; j <= src.cols() - filterCols; j++) {
+                Mat submat = src.submat(i, i + filterRows, j, j + filterCols);
                 Mat res = new Mat();
                 Core.multiply(submat, kernel, res);
                 data[index++] = sumMat(res);
