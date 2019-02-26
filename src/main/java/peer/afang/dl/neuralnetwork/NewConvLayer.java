@@ -31,15 +31,17 @@ public class NewConvLayer {
     private Mat part3;
     private Mat grad;
 
-    public NewConvLayer(int weightSize, int inputSize, double[] data, Activator activator, boolean flag) {
+    public NewConvLayer(int weightSize, int inputSize, Activator activator, boolean flag) {
         this.flag = flag;
         this.activator = activator;
         this.weight = new Mat(weightSize, weightSize, CvType.CV_32F);
-//        double[] data = new double[weightSize * weightSize];
-//        for (int i = 0; i < data.length; i++) {
-//            new Random().nextDouble();
-//        }
+        double[] data = new double[weightSize * weightSize];
+        int index = 0;
+        for (int i = 0; i < data.length; i++) {
+            data[index++] = (new Random().nextDouble() - 0.5) * 2;
+        }
         weight.put(0, 0, data);
+//        System.out.println(weight.dump());
         int outSize = (inputSize + 2 * 0 - weightSize) / 1 + 1;
         this.out = new Mat(outSize, outSize, CvType.CV_32F);
         this.activatedOutput = new Mat(outSize, outSize, CvType.CV_32F);
@@ -47,8 +49,11 @@ public class NewConvLayer {
 
     public void computeOut() {
         Mat t = new Mat();
+
         Core.rotate(weight, t, 1);
 //        (input.rows() + 2 * 0 - weight.rows()) / 1 + 1;
+//        System.out.println(input.dump());
+//        System.out.println(t.dump());
         MatUtils.conv(input, t, out, 1, 0, 0);
 //        System.out.println("************************************");
 //        System.out.println(input.dump());
@@ -65,7 +70,8 @@ public class NewConvLayer {
             Mat t1 = new Mat();
             Core.multiply(lastPart1, lastPart2, t1);
             Core.gemm(t1, lastWeight.t(), 1, new Mat(), 1, grad2pardIn);
-            grad2pardIn = grad2pardIn.reshape(1, 2);
+//            System.out.println(grad2pardIn);
+            grad2pardIn = grad2pardIn.reshape(1, 13);
             part1 = grad2pardIn;
             part2 = new Arctan().derivative(out);
             part3 = input;
@@ -81,7 +87,9 @@ public class NewConvLayer {
             grad = grad2;
         } else {
             Mat ttt;
-            Mat grad1partInpadweight = MatUtils.paddingZeor(lastWeight, 1, 1, 1, 1);
+            int padSize = out.rows() - lastWeight.rows();
+//            System.out.println("padsize : " + padSize);
+            Mat grad1partInpadweight = MatUtils.paddingZeor(lastWeight, padSize, padSize, padSize, padSize);
             Mat t5 = new Mat();
             Core.multiply(lastPart1, lastPart2, t5);
             Mat grad1partIn = new Mat();
@@ -89,10 +97,14 @@ public class NewConvLayer {
 
             ttt = new Mat();
             Core.rotate(grad1partIn, ttt, 1);
+//            System.out.println(grad1partInpadweight);
+//            System.out.println(ttt);
             part1 = MatUtils.conv(grad1partInpadweight, ttt, 1, 0, 0);
             part2 = new Tanh().derivative(out);
             part3 = input;
             Mat t6 = new Mat();
+//            System.out.println(part1);
+//            System.out.println(part2);
             Core.multiply(part1, part2, t6);
             Mat t7 = new Mat();
             Core.rotate(t6, t7, 1);

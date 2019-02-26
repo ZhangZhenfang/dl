@@ -35,6 +35,8 @@ public class MatUtils {
         int resultRows = (src.rows() + 2 * padding - filterRows) / stride + 1;
         int resultCols = (src.cols() + 2 * padding - filterCols) / stride + 1;
 
+//        System.out.println(resultRows);
+//        System.out.println(resultCols);
         Mat result = new Mat(resultRows, resultCols, CvType.CV_32F);
         double[] data = new double[resultRows * resultCols];
         int index = 0;
