@@ -46,13 +46,15 @@ public class ConvLayer {
 
     public void computeGrad() {
         if (nextLayer == null) {
-            Mat dst = new Mat();
-            Core.multiply(fcLayer.getDelta(), fcLayer.getWeight(), dst);
-            Mat derivative = activator.derivative(out);
-            Core.multiply(dst, derivative, delta);
-
+            this.delta = fcLayer.getInputDelta().reshape(1, 2);
+            grad = MatUtils.conv(input, delta, 1, 1, 0);
         } else {
-
+            Mat mat = MatUtils.paddingZeor(nextLayer.delta, 2, 2, 2, 2);
+            Mat dst = new Mat();
+            Core.flip(nextLayer.weight, dst, 1);
+            Core.flip(dst, dst, 1);
+            delta = MatUtils.conv(mat, dst, 1, 1, 0);
+            grad = MatUtils.conv(input, delta, 1, 1, 0);
         }
     }
 
@@ -126,5 +128,21 @@ public class ConvLayer {
 
     public void setFcLayer(FCLayer fcLayer) {
         this.fcLayer = fcLayer;
+    }
+
+    public Mat getDelta() {
+        return delta;
+    }
+
+    public void setDelta(Mat delta) {
+        this.delta = delta;
+    }
+
+    public Mat getGrad() {
+        return grad;
+    }
+
+    public void setGrad(Mat grad) {
+        this.grad = grad;
     }
 }

@@ -2,6 +2,7 @@ package peer.afang.dl.test;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import peer.afang.dl.util.Arctan;
 import peer.afang.dl.util.Tanh;
 
 /**
@@ -38,7 +39,10 @@ public class Cnn {
         }
         cnn.forward(inputs[0]);
         cnn.fcLayer.computeGrad(labels[0]);
-
+        cnn.convLayer2.computeGrad();
+        cnn.convLayer1.computeGrad();
+        System.out.println(cnn.convLayer2.getGrad().dump());
+        System.out.println(cnn.convLayer1.getGrad().dump());
     }
 
     private ConvLayer convLayer1;
@@ -46,7 +50,13 @@ public class Cnn {
     private FCLayer fcLayer;
     public Cnn() {
         this.convLayer1 = new ConvLayer(2, new Tanh(), 4);
-        this.convLayer2 = new ConvLayer(2, new Tanh(), 3);
+        Mat w = new Mat(2, 2, CvType.CV_32F);
+        w.put(0, 0, data1);
+        convLayer1.setWeight(w);
+        this.convLayer2 = new ConvLayer(2, new Arctan(), 3);
+        w = new Mat(2, 2, CvType.CV_32F);
+        w.put(0, 0, data2);
+        convLayer2.setWeight(w);
         convLayer1.setPreviousLayer(null);
         convLayer1.setNextLayer(convLayer2);
         convLayer2.setPreviousLayer(convLayer1);
@@ -54,12 +64,16 @@ public class Cnn {
         convLayer2.setInput(convLayer1.getActivatedOut());
         this.fcLayer = new FCLayer(4, 1);
         this.fcLayer.setInput(convLayer2.getActivatedOut());
+        w = new Mat(4, 1, CvType.CV_32F);
+        w.put(0, 0, data3);
+        fcLayer.setWeight(w);
         convLayer2.setFcLayer(fcLayer);
     }
 
     public void forward(Mat input) {
         convLayer1.setInput(input);
         convLayer1.computeOut();
+        System.out.println(convLayer1.getActivatedOut().dump());
         convLayer2.computeOut();
         fcLayer.computeOut();
         System.out.println(fcLayer.getOut().dump());

@@ -19,7 +19,7 @@ public class FCLayer {
     private double bias;
     private Mat delta;
     private Mat grad;
-
+    private Mat inputDelta;
     public FCLayer(int inputSize, int outSize) {
         this.weight = new Mat(inputSize, outSize, CvType.CV_32F);
         this.out = new Mat(outSize, outSize, CvType.CV_32F);
@@ -48,9 +48,23 @@ public class FCLayer {
         Core.subtract(one, out, d2);
         Mat d3 = new Mat();
         Core.multiply(out, d2, d3);
-        Mat d4 = new Mat();
+
         Core.multiply(d3, d1, delta);
         Core.gemm(input.reshape(1, 1).t(), delta, 1, new Mat(), 1, grad);
+
+        System.out.println(input.dump());
+        Mat d4 = new Mat();
+        one = Mat.ones(input.reshape(1, 1).t().size(), input.type());
+        Core.subtract(one, input.reshape(1, 1).t(), d4);
+        Mat d5 = new Mat();
+        Core.gemm(weight, delta, 1, new Mat(), 1, d5);
+        System.out.println(d5.dump());
+        Mat d6 = new Mat();
+        Core.multiply(input.reshape(1, 1).t(), d4, d6);
+        Mat d7 = new Mat();
+        Core.multiply(d6, d5, d7);
+        System.out.println(d7.dump());
+        this.inputDelta = d7;
     }
 
     public void update(double rate) {
@@ -104,5 +118,13 @@ public class FCLayer {
 
     public void setGrad(Mat grad) {
         this.grad = grad;
+    }
+
+    public Mat getInputDelta() {
+        return inputDelta;
+    }
+
+    public void setInputDelta(Mat inputDelta) {
+        this.inputDelta = inputDelta;
     }
 }

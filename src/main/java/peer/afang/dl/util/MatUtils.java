@@ -45,7 +45,7 @@ public class MatUtils {
                 Mat submat = src.submat(i, i + filterRows, j, j + filterCols);
                 Mat res = new Mat();
                 Core.multiply(submat, kernel, res);
-                data[index++] = sumMat(res);
+                data[index++] = sumMat(res) + d;
             }
         }
         result.put(0, 0, data);
@@ -65,7 +65,7 @@ public class MatUtils {
                 Mat submat = src.submat(i, i + filterRows, j, j + filterCols);
                 Mat res = new Mat();
                 Core.multiply(submat, kernel, res);
-                data[index++] = sumMat(res);
+                data[index++] = sumMat(res) + d;
             }
         }
         dst.put(0, 0, data);
@@ -110,5 +110,11 @@ public class MatUtils {
         }
         Core.vconcat(data, result);
         return result;
+    }
+
+    public static Mat rotate180(Mat src) {
+        Mat dst = new Mat();
+        Core.rotate(src, dst, 1);
+        return dst;
     }
 }
