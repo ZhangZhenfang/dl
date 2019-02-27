@@ -38,8 +38,8 @@ public class MnistTest {
                 Mat label = getNextLabel(trainMnistReader);
 //                bp.newBackPropagation(input, label, 0.2);
                 newBp.back(input, label, 0.1);
-                System.out.println(newBp.getHidLayers().get(0).getDelta().dump());
-                new Scanner(System.in).nextLine();
+//                System.out.println(newBp.getHidLayers().get(0).getDelta().dump());
+//                new Scanner(System.in).nextLine();
             }
             trainMnistReader.open(MnistReader.TRAIN_IMAGES_FILE, MnistReader.TRAIN_LABELS_FILE);
             times++;

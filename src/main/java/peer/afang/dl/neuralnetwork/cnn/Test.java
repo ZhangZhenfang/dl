@@ -3,10 +3,10 @@ package peer.afang.dl.neuralnetwork.cnn;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import peer.afang.dl.util.Activator;
-import peer.afang.dl.util.MatUtils;
-import peer.afang.dl.util.Relu;
-import peer.afang.dl.util.Sigmoid;
+import org.opencv.core.Scalar;
+import peer.afang.dl.util.*;
+
+import java.util.Scanner;
 
 /**
  * @author ZhangZhenfang
@@ -49,66 +49,125 @@ public class Test {
         weights[2] = new Mat(4, 1, CvType.CV_32F);
         weights[2].put(0, 0, data3);
         double b1 = 0, b2 = 0, b3 = 0;
-        Activator relu = new Relu();
+        Activator relu = new Tanh();
         Activator sigmoid = new Sigmoid();
-        Mat z1 = MatUtils.conv(inputs[0], weights[0], 1, 0, b1);
-        Mat a1 = relu.activate(z1);
-        System.out.println("conv1");
-        System.out.println(z1.dump());
-        System.out.println(a1.dump());
 
-        Mat z2 = MatUtils.conv(a1, weights[1], 1, 0, b2);
-        Mat a2 = relu.activate(z2);
-        System.out.println("conv2");
-        System.out.println(z2.dump());
-        System.out.println(a2.dump());
+        for (int j = 0; j < 1000; j++) {
+            for (int i = 0; i < 4; i++) {
+                Mat z1 = MatUtils.conv(inputs[i], weights[0], 1, 0, b1);
+                Core.add(z1, new Scalar(b1), z1);
+                Mat a1 = relu.activate(z1);
+                System.out.println("conv1");
+                System.out.println(z1.dump());
+                System.out.println(a1.dump());
+                new Scanner(System.in).nextLine();
 
-        Mat z3 = new Mat();
-        Core.gemm(a2.reshape(1, 1), weights[2], 1, new Mat(), 1, z3);
-        Mat t1 = new Mat(1, 1, CvType.CV_32F);
-        t1.put(0, 0, b3);
-        Core.add(z3, t1, z3);
-        Mat a3 = sigmoid.activate(z3);
-        System.out.println("fc");
-        System.out.println(z3.dump());
-        System.out.println(a3.dump());
+                Mat z2 = MatUtils.conv(a1, weights[1], 1, 0, b2);
+                Core.add(z2, new Scalar(b2), z2);
+                Mat a2 = relu.activate(z2);
+                System.out.println("conv2");
+                System.out.println(z2.dump());
+                System.out.println(a2.dump());
+                new Scanner(System.in).nextLine();
 
-        Mat delta3 = new Mat();
-        Mat derivativeZ3 = sigmoid.derivative(z3);
-        System.out.println(derivativeZ3.dump());
-        Mat deltaOut = new Mat();
-        Core.subtract(labels[0], a3, deltaOut);
-        Core.multiply(deltaOut, derivativeZ3, delta3);
-        System.out.println("delta3");
-        System.out.println(delta3.dump());
-        Mat grad3 = new Mat();
-        Core.gemm(a2.reshape(1, 1).t(), delta3, 1, new Mat(), 1, grad3);
-        System.out.println(grad3.dump());
+                Mat z3 = new Mat();
+                Core.gemm(a2.reshape(1, 1), weights[2], 1, new Mat(), 1, z3);
+                Mat t1 = new Mat(1, 1, CvType.CV_32F);
+                t1.put(0, 0, b3);
+                Core.add(z3, t1, z3);
+                Mat a3 = sigmoid.activate(z3);
+                System.out.println("fc");
+                System.out.println(z3.dump());
+                System.out.println(a3.dump());
+                new Scanner(System.in).nextLine();
 
+                Mat delta3 = new Mat();
+                Mat derivativeZ3 = sigmoid.derivative(z3);
+//                System.out.println(derivativeZ3.dump());
+                Mat deltaOut = new Mat();
+                Core.subtract(labels[i], a3, deltaOut);
+                Core.multiply(deltaOut, derivativeZ3, delta3);
+                System.out.println("delta3");
+                System.out.println(delta3.dump());
+                Mat grad3 = new Mat();
+                Core.gemm(a2.reshape(1, 1).t(), delta3, 1, new Mat(), 1, grad3);
+                System.out.println(grad3.dump());
+                new Scanner(System.in).nextLine();
 
-        System.out.println("delta2");
-        Mat delta2 = new Mat();
-        Mat derivativeZ2 = relu.derivative(z2);
-        Mat t2 = new Mat();
-        Core.gemm(weights[2], delta3, 1, new Mat(), 1, t2);
-        Mat t3 = t2.reshape(1, 2);
-        Core.multiply(t3, derivativeZ2, delta2);
-        System.out.println(delta2.dump());
+                System.out.println("delta2");
+                Mat delta2 = new Mat();
+                Mat derivativeZ2 = relu.derivative(z2);
+                Mat t2 = new Mat();
+                Core.gemm(weights[2], delta3, 1, new Mat(), 1, t2);
+                Mat t3 = t2.reshape(1, 2);
+                Core.multiply(t3, derivativeZ2, delta2);
+                System.out.println(delta2.dump());
 
-        Mat grad2 = MatUtils.conv(a1, delta2, 1, 0, 0);
-        System.out.println(grad2.dump());
+                Mat grad2 = MatUtils.conv(a1, delta2, 1, 0, 0);
+                System.out.println(grad2.dump());
+                new Scanner(System.in).nextLine();
 
-        System.out.println("delta1");
-        Mat delta1 = new Mat();
-        Mat derivativeZ1 = relu.derivative(z1);
-        Mat t4 = new Mat();
-        Core.gemm(weights[2], delta3, 1, new Mat(), 1, t2);
-        Mat t5 = t4.reshape(1, 2);
-        Core.multiply(t5, derivativeZ1, delta1);
-        System.out.println(delta1.dump());
+                System.out.println("delta1");
+                Mat delta1 = new Mat();
+                Mat paddedDelta2 = MatUtils.paddingZeor(delta2, 1, 1, 1, 1);
+                Mat conv = MatUtils.conv(paddedDelta2, MatUtils.rotate180(weights[1]), 1, 0, 0);
+                Mat derivativeZ1 = relu.derivative(z1);
+//                System.out.println(conv + "\n" + derivativeZ1);
+                Core.multiply(conv, derivativeZ1, delta1);
+                System.out.println(delta1.dump());
 
-        Mat grad1 = MatUtils.conv(inputs[0], delta1, 1, 0, 0);
-        System.out.println(grad1.dump());
+                Mat grad1 = MatUtils.conv(inputs[i], delta1, 1, 0, 0);
+                System.out.println(grad1.dump());
+                new Scanner(System.in).nextLine();
+
+                Mat mm = new Mat();
+                Core.multiply(grad3, new Scalar(0.01), mm);
+                Core.subtract(weights[2], mm, weights[2]);
+                b1 = b1 - 0.01 * MatUtils.sumMat(delta3);
+
+                Core.multiply(grad2, new Scalar(0.01), mm);
+                Core.subtract(weights[1], mm, weights[1]);
+                b2 = b2 - 0.01 * MatUtils.sumMat(delta2);
+
+                Core.multiply(grad1, new Scalar(0.01), mm);
+                Core.subtract(weights[0], mm, weights[0]);
+                b3 = b3 - 0.01 * MatUtils.sumMat(delta1);
+            }
+        }
+
+        System.out.println("weights");
+        System.out.println(weights[0].dump());
+        System.out.println(b1);
+        System.out.println(weights[1].dump());
+        System.out.println(b2);
+        System.out.println(weights[2].dump());
+        System.out.println(b3);
+        System.out.println("\n\n");
+        for (int i = 0; i < 4; i++) {
+            Mat z1 = MatUtils.conv(inputs[i], weights[0], 1, 0, b1);
+            Core.add(z1, new Scalar(b1), z1);
+            Mat a1 = relu.activate(z1);
+            System.out.println("conv1");
+            System.out.println(z1.dump());
+            System.out.println(a1.dump());
+
+            Mat z2 = MatUtils.conv(a1, weights[1], 1, 0, b2);
+            Core.add(z2, new Scalar(b2), z2);
+            Mat a2 = relu.activate(z2);
+            System.out.println("conv2");
+            System.out.println(z2.dump());
+            System.out.println(a2.dump());
+
+            Mat z3 = new Mat();
+            Core.gemm(a2.reshape(1, 1), weights[2], 1, new Mat(), 1, z3);
+            Mat t1 = new Mat(1, 1, CvType.CV_32F);
+            t1.put(0, 0, b3);
+            Core.add(z3, t1, z3);
+            Mat a3 = sigmoid.activate(z3);
+            System.out.println("fc");
+            System.out.println(z3.dump());
+            System.out.println(a3.dump());
+        }
 
     }
 }

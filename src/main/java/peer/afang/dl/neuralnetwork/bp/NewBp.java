@@ -2,6 +2,7 @@ package peer.afang.dl.neuralnetwork.bp;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import peer.afang.dl.neuralnetwork.cnn.TestData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ public class NewBp {
                 input = new Mat(1, 3, CvType.CV_32F);
                 input.put(0, 0, inputs[j]);
                 newBp.forward(input);
+//                new Scanner(System.in).nextLine();
 //                System.out.println(newBp.outLayer.getOutput().dump());
 //                System.out.println(newBp.hidLayers.get(0).getWeight().dump());
 //                System.out.println(newBp.hidLayers.get(0).getOutput().dump());
@@ -74,7 +76,15 @@ public class NewBp {
             hidLayers.add(hidLayer);
         }
         outLayer = new OutLayer(hidLayer.getOutput(), outputLength);
-        outLayer.print();
+        Mat m = new Mat(3, 4, CvType.CV_32F);
+        m.put(0, 0, TestData.weight1);
+        hidLayers.get(0).setWeight(m);
+        m = new Mat(4, 3, CvType.CV_32F);
+        m.put(0, 0, TestData.weight2);
+        hidLayers.get(1).setWeight(m);
+        m = new Mat(3, 1, CvType.CV_32F);
+        m.put(0, 0, TestData.weight3);
+        outLayer.setWeight(m);
     }
 
     public List<HidLayer> getHidLayers() {
