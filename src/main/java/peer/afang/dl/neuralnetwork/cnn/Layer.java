@@ -1,10 +1,8 @@
 package peer.afang.dl.neuralnetwork.cnn;
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import peer.afang.dl.util.Activator;
-import peer.afang.dl.util.MatUtils;
 
 import java.util.Random;
 
