@@ -19,6 +19,7 @@ public class OutLayer extends Layer{
     public void computeOut() {
         z = new Mat();
         Core.gemm(pre.getA(), weight, 1, new Mat(), 1, z);
+        Core.add(z, new Scalar(bia), z);
         a = activator.activate(z);
     }
 
@@ -37,6 +38,6 @@ public class OutLayer extends Layer{
     public void updateWeight(double rate) {
         Core.multiply(grad, new Scalar(rate), grad);
         Core.add(weight, grad, weight);
-//        bia -= rate * MatUtils.sumMat(delta);
+        bia -= rate * MatUtils.sumMat(delta);
     }
 }

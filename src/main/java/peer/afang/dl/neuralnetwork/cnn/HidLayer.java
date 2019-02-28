@@ -23,7 +23,7 @@ public class HidLayer extends Layer{
     public void computeOut() {
         z = new Mat();
         Core.gemm(pre.getA(), weight, 1, new Mat(), 1, z);
-//        Core.add(z, new Scalar(bia), z);
+        Core.add(z, new Scalar(bia), z);
         a = activator.activate(z);
     }
 

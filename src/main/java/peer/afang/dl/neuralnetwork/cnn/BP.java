@@ -4,8 +4,6 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import peer.afang.dl.util.Sigmoid;
 
-import java.util.Scanner;
-
 /**
  * @author ZhangZhenfang
  * @date 2019/2/27 22:04
@@ -22,9 +20,9 @@ public class BP {
     private OutLayer outLayer;
 
     public static void main(String[] args) {
-        double[][] inputs = new double[][]{{0, 0, 1}, {0, 1, 1}, {1, 1, 1}, {1, 0, 1}};
+        double[][] inputs = new double[][]{{0, 0}, {0, 1}, {1, 1}, {1, 0}};
         double[] labels = new double[]{0, 1, 1, 0};
-        Mat input = new Mat(1, 3, CvType.CV_32F);
+        Mat input = new Mat(1, 2, CvType.CV_32F);
         input.put(0, 0, inputs[0]);
         BP bp = new BP();
 
@@ -33,7 +31,7 @@ public class BP {
         System.out.println(bp.outLayer.weight.dump());
         for (int i = 0; i < 10000; i++) {
             for (int j = 0; j < 4; j++) {
-                input = new Mat(1, 3, CvType.CV_32F);
+                input = new Mat(1, 2, CvType.CV_32F);
                 input.put(0, 0, inputs[j]);
                 bp.forword(input);
                 Mat label = new Mat(1, 1, CvType.CV_32F);
@@ -41,19 +39,19 @@ public class BP {
                 bp.back(label, 0.1);
             }
         }
-        Mat in = new Mat(1, 3, CvType.CV_32F);
+        Mat in = new Mat(1, 2, CvType.CV_32F);
         in.put(0, 0, inputs[0]);
         bp.forword(in);
         System.out.println(bp.outLayer.getA().dump());
-        in = new Mat(1, 3, CvType.CV_32F);
+        in = new Mat(1, 2, CvType.CV_32F);
         in.put(0, 0, inputs[1]);
         bp.forword(in);
         System.out.println(bp.outLayer.getA().dump());
-        in = new Mat(1, 3, CvType.CV_32F);
+        in = new Mat(1, 2, CvType.CV_32F);
         in.put(0, 0, inputs[2]);
         bp.forword(in);
         System.out.println(bp.outLayer.getA().dump());
-        in = new Mat(1, 3, CvType.CV_32F);
+        in = new Mat(1, 2, CvType.CV_32F);
         in.put(0, 0, inputs[3]);
         bp.forword(in);
         System.out.println(bp.outLayer.getA().dump());
@@ -61,18 +59,18 @@ public class BP {
 
     private BP() {
         this.inputLayer = new InputLayer();
-        this.hidLayer1 = new HidLayer(3, 4, new Sigmoid());
+        this.hidLayer1 = new HidLayer(2, 4, new Sigmoid());
         this.hidLayer2 = new HidLayer(4, 3, new Sigmoid());
         this.outLayer = new OutLayer(3, 1, new Sigmoid());
-        Mat m = new Mat(3, 4, CvType.CV_32F);
-        m.put(0, 0, TestData.weight1);
-        hidLayer1.setWeight(m);
-        m = new Mat(4, 3, CvType.CV_32F);
-        m.put(0, 0, TestData.weight2);
-        hidLayer2.setWeight(m);
-        m = new Mat(3, 1, CvType.CV_32F);
-        m.put(0, 0, TestData.weight3);
-        outLayer.setWeight(m);
+//        Mat m = new Mat(3, 4, CvType.CV_32F);
+//        m.put(0, 0, TestData.weight1);
+//        hidLayer1.setWeight(m);
+//        m = new Mat(4, 3, CvType.CV_32F);
+//        m.put(0, 0, TestData.weight2);
+//        hidLayer2.setWeight(m);
+//        m = new Mat(3, 1, CvType.CV_32F);
+//        m.put(0, 0, TestData.weight3);
+//        outLayer.setWeight(m);
 
         hidLayer1.setPre(inputLayer);
         hidLayer2.setPre(hidLayer1);
@@ -90,11 +88,10 @@ public class BP {
 
     public void back(Mat label, double rate) {
         outLayer.computeGrad(label);
-        outLayer.updateWeight(rate);
         hidLayer2.computeGrad();
-        hidLayer2.updateWeight(rate);
         hidLayer1.computeGrad();
+        outLayer.updateWeight(rate);
+        hidLayer2.updateWeight(rate);
         hidLayer1.updateWeight(rate);
     }
-
 }
