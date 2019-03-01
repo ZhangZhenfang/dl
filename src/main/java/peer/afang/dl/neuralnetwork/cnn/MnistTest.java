@@ -46,23 +46,23 @@ public class MnistTest {
             m.put(0, 0, data);
             weights[i] = m;
         }
-        Mat m = new Mat(361, 100, CvType.CV_32F);
-        double[] data = new double[361 * 100];
+        Mat m = new Mat(361, 150, CvType.CV_32F);
+        double[] data = new double[361 * 150];
         for (int i = 0; i < data.length; i++) {
             data[i] = (new Random().nextDouble() - 0.5) * 2;
         }
         m.put(0, 0, data);
         weights[3] = m;
-        m = new Mat(100, 60, CvType.CV_32F);
-        data = new double[100 * 60];
+        m = new Mat(150, 150, CvType.CV_32F);
+        data = new double[150 * 150];
         for (int i = 0; i < data.length; i++) {
             data[i] = (new Random().nextDouble() - 0.5) * 2;
         }
         m.put(0, 0, data);
         weights[4] = m;
 
-        m = new Mat(60, 10, CvType.CV_32F);
-        data = new double[60 * 10];
+        m = new Mat(150, 10, CvType.CV_32F);
+        data = new double[150 * 10];
         for (int i = 0; i < data.length; i++) {
             data[i] = (new Random().nextDouble() - 0.5) * 2;
         }
@@ -249,41 +249,52 @@ public class MnistTest {
 //        System.out.println(b3);
 //        System.out.println("\n\n");
 
+        for (int i = 0; i < weights.length; i++) {
+            System.out.println(weights[i].dump());
+        }
         // 测试
         for (int i = 0; i < inputs.length; i++) {
+            System.out.println(inputs[i].dump());
             // 第一层卷积层
             Mat z1 = MatUtils.conv(inputs[i], weights[0], 1, 0, 0);
             Core.add(z1, new Scalar(b1), z1);
             Mat a1 = relu.activate(z1);
 
+            System.out.println("a1");
+            System.out.println(a1.dump());
             // 第二层卷积层
             Mat z2 = MatUtils.conv(a1, weights[1], 1, 0, 0);
             Core.add(z2, new Scalar(b2), z2);
             Mat a2 = relu.activate(z2);
-
+            System.out.println("a2");
+            System.out.println(a2.dump());
             // 第三层卷积层
             Mat z3 = MatUtils.conv(a2, weights[2], 1, 0, 0);
             Core.add(z3, new Scalar(b3), z3);
             Mat a3 = relu.activate(z3);
-
+            System.out.println("a3");
+            System.out.println(a3.dump());
 
             // 全连接层四
             Mat z4 = new Mat();
             Core.gemm(a3.reshape(1, 1), weights[3], 1, new Mat(), 1, z4);
             Core.add(z4, new Scalar(b4), z4);
             Mat a4 = sigmoid.activate(z4);
-
+            System.out.println("a4");
+            System.out.println(a4.dump());
             // 全连接层五
             Mat z5 = new Mat();
             Core.gemm(a4, weights[4], 1, new Mat(), 1, z5);
             Core.add(z5, new Scalar(b5), z5);
             Mat a5 = sigmoid.activate(z5);
-
+            System.out.println("a5");
+            System.out.println(a5.dump());
             // 全连接层六
             Mat z6 = new Mat();
             Core.gemm(a5, weights[5], 1, new Mat(), 1, z6);
             Core.add(z6, new Scalar(b6), z6);
             Mat a6 = sigmoid.activate(z6);
+            System.out.println("a6");
             System.out.println(a6.dump());
             System.out.println(labels[i].dump());
             new Scanner(System.in).nextLine();
