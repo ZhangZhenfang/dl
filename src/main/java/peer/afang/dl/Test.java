@@ -42,6 +42,9 @@ public class Test {
         System.out.println(m.dump());
         Core.rotate(m, dst, 1);
         System.out.println(dst.dump());
+
+        dst.release();
+        System.out.println(dst.dump());
 //        System.out.println(MatUtils.conv(m, dst, 1, 0, 0).dump());
 
 //        System.out.println(m.dump());

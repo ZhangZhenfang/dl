@@ -6,4 +6,15 @@ package peer.afang.dl.neuralnetwork.cnn;
  */
 public class InputLayer extends Layer {
 
+    public void computeOut() {
+
+    }
+
+    public void computeGrad() {
+
+    }
+
+    public void updateWeight(double rate) {
+
+    }
 }

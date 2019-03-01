@@ -29,7 +29,7 @@ public class BP {
         System.out.println(bp.hidLayer1.weight.dump());
         System.out.println(bp.hidLayer2.weight.dump());
         System.out.println(bp.outLayer.weight.dump());
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 5000; i++) {
             for (int j = 0; j < 4; j++) {
                 input = new Mat(1, 2, CvType.CV_32F);
                 input.put(0, 0, inputs[j]);
@@ -59,8 +59,8 @@ public class BP {
 
     private BP() {
         this.inputLayer = new InputLayer();
-        this.hidLayer1 = new HidLayer(2, 4, new Sigmoid());
-        this.hidLayer2 = new HidLayer(4, 3, new Sigmoid());
+        this.hidLayer1 = new HidLayer(2, 3, new Sigmoid());
+        this.hidLayer2 = new HidLayer(3, 3, new Sigmoid());
         this.outLayer = new OutLayer(3, 1, new Sigmoid());
 //        Mat m = new Mat(3, 4, CvType.CV_32F);
 //        m.put(0, 0, TestData.weight1);
@@ -88,10 +88,10 @@ public class BP {
 
     public void back(Mat label, double rate) {
         outLayer.computeGrad(label);
-        hidLayer2.computeGrad();
-        hidLayer1.computeGrad();
         outLayer.updateWeight(rate);
+        hidLayer2.computeGrad();
         hidLayer2.updateWeight(rate);
+        hidLayer1.computeGrad();
         hidLayer1.updateWeight(rate);
     }
 }

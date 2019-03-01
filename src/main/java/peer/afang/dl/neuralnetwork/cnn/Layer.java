@@ -7,20 +7,51 @@ import peer.afang.dl.util.Activator;
 import java.util.Random;
 
 /**
+ * 层
  * @author ZhangZhenfang
  * @date 2019/2/27 22:12
  */
-public class Layer {
+abstract class Layer {
 
+    /**
+     * 上一层
+     */
     protected Layer pre;
+    /**
+     * 下一层
+     */
     protected Layer next;
+    /**
+     * 输入
+     */
     protected Mat input;
+    /**
+     * 权重
+     */
     protected Mat weight;
+    /**
+     * 线性输出
+     */
     protected Mat z;
+    /**
+     * 经过复合函数后的输出
+     */
     protected Mat a;
-    protected double bia;
+    /**
+     * 偏置
+     */
+    protected Mat bia;
+    /**
+     * 激活函数
+     */
     protected Activator activator;
+    /**
+     * 误差
+     */
     protected Mat delta;
+    /**
+     * 梯度
+     */
     protected Mat grad;
 
 
@@ -33,10 +64,32 @@ public class Layer {
         }
         this.weight = new Mat(inputSize, outSize, CvType.CV_32F);
         weight.put(0, 0, data);
-        this.bia = 0;
+        this.bia = new Mat(1, outSize, CvType.CV_32F);
+        data = new double[outSize];
+        for (int i = 0; i < outSize; i++) {
+            data[i] = (new Random().nextDouble() - 0.5) * 2;
+        }
+        bia.put(0, 0, data);
+        this.z = new Mat();
+        this.a = new Mat(1, outSize, CvType.CV_32F);
+        this.delta = new Mat();
+        this.grad = new Mat();
     }
 
+    /**
+     * 计算输出
+     */
+    public abstract void computeOut();
 
+    /**
+     * 计算梯度
+     */
+    public abstract void computeGrad();
+
+    /**
+     * 更新权重
+     */
+    public abstract void updateWeight(double rate);
     public Layer getPre() {
         return pre;
     }
@@ -85,11 +138,11 @@ public class Layer {
         this.a = a;
     }
 
-    public double getBia() {
+    public Mat getBia() {
         return bia;
     }
 
-    public void setBia(double bia) {
+    public void setBia(Mat bia) {
         this.bia = bia;
     }
 

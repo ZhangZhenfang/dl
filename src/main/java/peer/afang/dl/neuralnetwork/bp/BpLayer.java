@@ -11,16 +11,16 @@ import java.util.Random;
  * @author ZhangZhenfang
  * @date 2019/1/29 14:45
  */
-abstract class Layer {
+abstract class BpLayer {
     private Mat input;
     private Mat weight;
     private Mat output;
     private Mat delta;
     private Mat one;
-    public Layer() {
+    public BpLayer() {
 
     }
-    public Layer(Mat input, int outputLength) {
+    public BpLayer(Mat input, int outputLength) {
         this.input = input;
         this.output = Mat.zeros(input.rows(), outputLength, CvType.CV_32F);
         this.delta = Mat.zeros(input.rows(), outputLength, CvType.CV_32F);
@@ -39,9 +39,6 @@ abstract class Layer {
 
     public void updateWeight(double rate) {
         Mat dst = new Mat(weight.size(), CvType.CV_32F);
-//        System.out.println("*******************88");
-//        System.out.println(input);
-//        System.out.println(delta);
         Core.gemm(input.t(), delta, 1, new Mat(), 1, dst);
         Core.multiply(dst, new Scalar(rate), dst);
         Core.add(weight, dst, weight);

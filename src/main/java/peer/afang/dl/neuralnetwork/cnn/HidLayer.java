@@ -1,7 +1,6 @@
 package peer.afang.dl.neuralnetwork.cnn;
 
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import peer.afang.dl.util.Activator;
@@ -20,31 +19,34 @@ public class HidLayer extends Layer{
     /**
      * 计算输出
      */
+    @Override
     public void computeOut() {
-        z = new Mat();
         Core.gemm(pre.getA(), weight, 1, new Mat(), 1, z);
-        Core.add(z, new Scalar(bia), z);
-        a = activator.activate(z);
+        Core.add(z, bia, z);
+        activator.activate(z, a);
     }
 
     /**
      * 计算梯度
      */
+    @Override
     public void computeGrad() {
         Mat derivative = activator.derivative(a);
-        delta = new Mat();
-        grad = new Mat();
-        Core.gemm(next.getDelta(), next.getWeight().t(), 1, new Mat(), 1, delta);
-        Core.multiply(delta, derivative, delta);
-        Core.gemm(pre.a.t(), delta, 1, new Mat(), 1, grad);
+        Mat m = new Mat();
+        Core.gemm(next.getWeight(), next.getDelta().t(), 1, new Mat(), 1, m);
+        Core.multiply(m.t(), derivative, delta);
+        Core.gemm(pre.getA().t(), delta, 1, new Mat(), 1, grad);
     }
 
     /**
      * 更新weight
      */
+    @Override
     public void updateWeight(double rate) {
-        Core.multiply(grad, new Scalar(rate), grad);
-        Core.add(weight, grad, weight);
-//        bia -= rate * MatUtils.sumMat(delta);
+        Mat m = new Mat();
+        Core.multiply(grad, new Scalar(rate), m);
+        Core.add(weight, m, weight);
+        Core.multiply(delta, new Scalar(rate), m);
+        Core.add(bia, m, bia);
     }
 }

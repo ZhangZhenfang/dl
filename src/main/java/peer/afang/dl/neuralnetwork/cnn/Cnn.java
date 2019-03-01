@@ -3,10 +3,6 @@ package peer.afang.dl.neuralnetwork.cnn;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import peer.afang.dl.neuralnetwork.bp.Bp;
 import peer.afang.dl.neuralnetwork.bp.NewBp;
 import peer.afang.dl.neuralnetwork.bp.OutLayer;
 import peer.afang.dl.util.MnistReader;
@@ -14,7 +10,6 @@ import peer.afang.dl.util.MnistTest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * @author ZhangZhenfang

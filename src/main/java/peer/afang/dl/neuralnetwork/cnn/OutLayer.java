@@ -16,28 +16,32 @@ public class OutLayer extends Layer{
         super(inputSize, outSize, activator);
     }
 
+    @Override
     public void computeOut() {
-        z = new Mat();
         Core.gemm(pre.getA(), weight, 1, new Mat(), 1, z);
-        Core.add(z, new Scalar(bia), z);
-        a = activator.activate(z);
+        Core.add(z, bia, z);
+        activator.activate(z, a);
     }
 
+    @Override
+    public void computeGrad(){};
+
     public void computeGrad(Mat label) {
-//        System.out.println(z.dump());
         Mat derivative = activator.derivative(a);
-        delta = new Mat();
-        grad = new Mat();
-        Core.subtract(label, a, delta);
-        Core.multiply(delta, derivative, delta);
-        Core.gemm(pre.a.t(), delta, 1, new Mat(), 1, grad);
+        Mat m = new Mat();
+        Core.subtract(label, a, m);
+        Core.multiply(m, derivative, delta);
+        Core.gemm(pre.getA().t(), delta, 1, new Mat(), 1, grad);
     }
     /**
      * 更新weight
      */
+    @Override
     public void updateWeight(double rate) {
-        Core.multiply(grad, new Scalar(rate), grad);
-        Core.add(weight, grad, weight);
-        bia -= rate * MatUtils.sumMat(delta);
+        Mat m = new Mat();
+        Core.multiply(grad, new Scalar(rate), m);
+        Core.add(weight, m, weight);
+        Core.multiply(delta, new Scalar(rate), m);
+        Core.add(bia, m, bia);
     }
 }

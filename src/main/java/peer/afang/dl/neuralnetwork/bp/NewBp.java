@@ -22,7 +22,7 @@ public class NewBp {
 
     public static void main(String[] args) {
         double[][] inputs = new double[][]{{0, 0, 1}, {0, 1, 1}, {1, 1, 1}, {1, 0, 1}};
-        double[] labels = new double[]{0,1, 1, 0};
+        double[] labels = new double[]{0, 1, 1, 0};
         Mat input = new Mat(1, 3, CvType.CV_32F);
         input.put(0, 0, inputs[0]);
         NewBp newBp = new NewBp(input, 2, new int[]{4, 3}, 1);
@@ -31,16 +31,9 @@ public class NewBp {
                 input = new Mat(1, 3, CvType.CV_32F);
                 input.put(0, 0, inputs[j]);
                 newBp.forward(input);
-//                new Scanner(System.in).nextLine();
-//                System.out.println(newBp.outLayer.getOutput().dump());
-//                System.out.println(newBp.hidLayers.get(0).getWeight().dump());
-//                System.out.println(newBp.hidLayers.get(0).getOutput().dump());
-//                System.out.println(newBp.outLayer.getWeight().dump());
-//                new Scanner(System.in).nextLine();
                 Mat label = new Mat(1, 1, CvType.CV_32F);
                 label.put(0, 0, labels[j]);
                 newBp.back(input, label, 0.1);
-
             }
         }
         Mat in = new Mat(1, 3, CvType.CV_32F);
@@ -111,10 +104,7 @@ public class NewBp {
             sigmoid(layer.getOutput());
         }
         outLayer.computeOut();
-//        System.out.println("____________________________________________________");
-//        System.out.println(outLayer.getOutput().dump());
         sigmoid(outLayer.getOutput());
-//        System.out.println(outLayer.getOutput().dump());
     }
 
     public void back(Mat input, Mat label, double rate) {

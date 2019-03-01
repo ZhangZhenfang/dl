@@ -8,16 +8,13 @@ import org.opencv.core.Mat;
  * @author ZhangZhenfang
  * @date 2019/1/29 14:46
  */
-public class OutLayer extends Layer {
+public class OutLayer extends BpLayer {
 
     public OutLayer(Mat input, int outputLength) {
         super(input, outputLength);
     }
     @Override
     void computeOut() {
-//        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-//        System.out.println(getInput().dump());
-//        System.out.println(getWeight().dump());
         Core.gemm(this.getInput(), this.getWeight(), 1, new Mat(), 1, this.getOutput());
     }
 
