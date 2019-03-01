@@ -19,8 +19,8 @@ public class MnistTest {
         System.load(path);
     }
     public static void main(String[] args) {
-        Mat[] inputs = new Mat[200];
-        Mat[] labels = new Mat[200];
+        Mat[] inputs = new Mat[2000];
+        Mat[] labels = new Mat[2000];
         Mat[] weights = new Mat[6];
 
         MnistReader reader = new MnistReader(MnistReader.TRAIN_IMAGES_FILE, MnistReader.TRAIN_LABELS_FILE);
@@ -74,6 +74,13 @@ public class MnistTest {
 //        }
 //        new Scanner(System.in).nextLine();
         double b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        Mat mb6 = new Mat(1, 10, CvType.CV_32F);
+        Mat mb5 = new Mat(1, 150, CvType.CV_32F);
+        Mat mb4 = new Mat(1, 150, CvType.CV_32F);
+        mb6.put(0, 0, RandomDouble.random(10));
+        mb5.put(0, 0, RandomDouble.random(150));
+        mb4.put(0, 0, RandomDouble.random(150));
+
         Activator relu = new Relu();
         Activator sigmoid = new Sigmoid();
 
@@ -91,7 +98,7 @@ public class MnistTest {
         Mat z6 = new Mat(1, 10, CvType.CV_32F);
         Mat a6 = new Mat(1, 10, CvType.CV_32F);
 
-        for (int j = 0; j < 100; j++) {
+        for (int j = 0; j < 10; j++) {
 
             for (int i = 0; i < inputs.length; i++) {
                 // 第一层卷积层
@@ -113,19 +120,22 @@ public class MnistTest {
                 // 全连接层四
 //                Mat z4 = new Mat();
                 Core.gemm(a3.reshape(1, 1), weights[3], 1, new Mat(), 1, z4);
-                Core.add(z4, new Scalar(b4), z4);
+//                Core.add(z4, new Scalar(b4), z4);
+                Core.add(z4, mb4, z4);
                 sigmoid.activate(z4, a4);
 
                 // 全连接层五
 //                Mat z5 = new Mat();
                 Core.gemm(a4, weights[4], 1, new Mat(), 1, z5);
-                Core.add(z5, new Scalar(b5), z5);
+//                Core.add(z5, new Scalar(b5), z5);
+                Core.add(z5, mb5, z5);
                 sigmoid.activate(z5, a5);
 
                 // 全连接层六
 //                Mat z6 = new Mat();
                 Core.gemm(a5, weights[5], 1, new Mat(), 1, z6);
-                Core.add(z6, new Scalar(b6), z6);
+//                Core.add(z6, new Scalar(b6), z6);
+                Core.add(z6, mb6, z6);
                 sigmoid.activate(z6, a6);
 
 
@@ -226,31 +236,37 @@ public class MnistTest {
                 /**
                  * 更新权重和偏执
                  */
-                double rate = 0.01;
+                double rate = 0.1;
                 Mat mm = new Mat();
                 Core.multiply(grad6, new Scalar(rate), mm);
 //                System.out.println(weights[5].dump());
                 Core.add(weights[5], mm, weights[5]);
-                b6 = b6 - rate * MatUtils.sumMat(delta6);
+                Core.multiply(delta6, new Scalar(rate), mm);
+                Core.add(mb6, mm, mb6);
+//                b6 = b6 - rate * MatUtils.sumMat(delta6);
 //                System.out.println(grad6.dump());
 //                System.out.println(weights[5].dump());
 //                new Scanner(System.in).nextLine();
 
                 Core.multiply(grad5, new Scalar(rate), mm);
                 Core.add(weights[4], mm, weights[4]);
-                b5 = b5 - rate * MatUtils.sumMat(delta5);
+                Core.multiply(delta5, new Scalar(rate), mm);
+                Core.add(mb5, mm, mb5);
+//                b5 = b5 - rate * MatUtils.sumMat(delta5);
                 Core.multiply(grad4, new Scalar(rate), mm);
                 Core.add(weights[3], mm, weights[3]);
-                b4 = b4 - rate * MatUtils.sumMat(delta4);
+                Core.multiply(delta4, new Scalar(rate), mm);
+                Core.add(mb4, mm, mb4);
+//                b4 = b4 - rate * MatUtils.sumMat(delta4);
                 Core.multiply(grad3, new Scalar(rate), mm);
                 Core.add(weights[2], mm, weights[2]);
-                b3 = b3 - rate * MatUtils.sumMat(delta3);
+                b3 = b3 + rate * MatUtils.sumMat(delta3);
                 Core.multiply(grad2, new Scalar(rate), mm);
                 Core.add(weights[1], mm, weights[1]);
-                b2 = b2 - rate * MatUtils.sumMat(delta2);
+                b2 = b2 + rate * MatUtils.sumMat(delta2);
                 Core.multiply(grad1, new Scalar(rate), mm);
                 Core.add(weights[0], mm, weights[0]);
-                b1 = b1 - rate * MatUtils.sumMat(delta1);
+                b1 = b1 + rate * MatUtils.sumMat(delta1);
             }
         }
 
@@ -266,37 +282,52 @@ public class MnistTest {
         for (int i = 0; i < weights.length; i++) {
             System.out.println(weights[i].dump());
         }
+
+        MnistReader testReader = new MnistReader(MnistReader.TEST_IMAGES_FILE, MnistReader.TEST_LABELS_FILE);
+
+        Mat[] testInputs = new Mat[200];
+        Mat[] testLabels = new Mat[200];
+        for (int i = 0; i < testInputs.length; i++) {
+            double[] nextImage = testReader.getNextImage(true);
+            Mat mat = new Mat(28, 28, CvType.CV_32F);
+            mat.put(0, 0, nextImage);
+            testInputs[i] = mat;
+            double[] nextLabel = testReader.getNextLabel();
+            mat = new Mat(1, 10, CvType.CV_32F);
+            mat.put(0, 0, nextLabel);
+            testLabels[i] = mat;
+        }
         // 测试
-        for (int i = 0; i < inputs.length; i++) {
-            a1.release();
-//            System.out.println(inputs[i].dump());
+        for (int i = 0; i < testInputs.length; i++) {
+//            a1.release();
+            System.out.println(testInputs[i].dump());
             // 第一层卷积层
-            MatUtils.conv(inputs[i], weights[0], z1, 1, 0, 0);
+            MatUtils.conv(testInputs[i], weights[0], z1, 1, 0, 0);
             Core.add(z1, new Scalar(b1), z1);
             relu.activate(z1, a1);
 
-//            System.out.println("a1");
-//            System.out.println(a1.dump());
+            System.out.println("a1");
+            System.out.println(a1.dump());
             // 第二层卷积层
             MatUtils.conv(a1, weights[1], z2, 1, 0, 0);
             Core.add(z2, new Scalar(b2), z2);
             relu.activate(z2, a2);
-//            System.out.println("a2");
-//            System.out.println(a2.dump());
+            System.out.println("a2");
+            System.out.println(a2.dump());
             // 第三层卷积层
             MatUtils.conv(a2, weights[2], z3, 1, 0, 0);
             Core.add(z3, new Scalar(b3), z3);
             relu.activate(z3, a3);
-//            System.out.println("a3");
-//            System.out.println(a3.dump());
+            System.out.println("a3");
+            System.out.println(a3.dump());
 
             // 全连接层四
 //            Mat z4 = new Mat();
             Core.gemm(a3.reshape(1, 1), weights[3], 1, new Mat(), 1, z4);
             Core.add(z4, new Scalar(b4), z4);
             sigmoid.activate(z4, a4);
-//            System.out.println("a4");
-//            System.out.println(a4.dump());
+            System.out.println("a4");
+            System.out.println(a4.dump());
             // 全连接层五
 //            Mat z5 = new Mat();
             Core.gemm(a4, weights[4], 1, new Mat(), 1, z5);
@@ -311,7 +342,7 @@ public class MnistTest {
             sigmoid.activate(z6, a6);
             System.out.println("a6");
             System.out.println(a6.dump());
-            System.out.println(labels[i].dump());
+            System.out.println(testLabels[i].dump());
             new Scanner(System.in).nextLine();
         }
     }

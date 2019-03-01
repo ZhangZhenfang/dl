@@ -29,7 +29,7 @@ public class BP {
         System.out.println(bp.hidLayer1.weight.dump());
         System.out.println(bp.hidLayer2.weight.dump());
         System.out.println(bp.outLayer.weight.dump());
-        for (int i = 0; i < 5000; i++) {
+        for (int i = 0; i < 3000; i++) {
             for (int j = 0; j < 4; j++) {
                 input = new Mat(1, 2, CvType.CV_32F);
                 input.put(0, 0, inputs[j]);
