@@ -59,7 +59,7 @@ public class MnistReader {
             }
             for (int j = 0; j < xPixel * yPixel; j++) {
                 if (norm) {
-                    element[j] = imageBin.read() / 255.0;
+                    element[j] = (imageBin.read() / 255.0 - 0.5) * 2;
                 } else {
                     element[j] = imageBin.read();
                 }
